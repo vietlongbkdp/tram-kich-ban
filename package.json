@@ -1,0 +1,6 @@
+{
+  "name": "tram-kich-ban",
+  "version": "2.0.0",
+  "description": "Trạm Kịch Bản — link sản phẩm → kịch bản + thông số + ảnh → project.json cho TikTok Shop Video Factory",
+  "engines": { "node": ">=18" }
+}

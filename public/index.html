@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trạm Kịch Bản — TikTok Shop Factory</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0C0F14; --panel:#151A21; --panel2:#1C232D; --line:#28313E; --line2:#37424f;
+  --text:#EDF1F6; --dim:#8794A6;
+  --cart:#FFD435; --cart-soft:rgba(255,212,53,.12);
+  --mint:#4EE1C4; --red:#FF6B6B;
+  --r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Be Vietnam Pro',system-ui,sans-serif;background:
+  radial-gradient(1000px 500px at 85% -10%, rgba(255,212,53,.05), transparent 60%),
+  var(--ink);color:var(--text);min-height:100vh}
+::selection{background:var(--cart);color:#111}
+button{font-family:inherit;cursor:pointer}
+
+/* ---------- Header ---------- */
+header{display:flex;align-items:center;gap:13px;padding:16px 26px;border-bottom:1px solid var(--line);
+  position:sticky;top:0;background:rgba(12,15,20,.85);backdrop-filter:blur(10px);z-index:10}
+.logo{width:38px;height:38px;border-radius:11px;background:var(--cart);display:grid;place-items:center;font-weight:800;color:#111;font-size:18px;box-shadow:0 0 24px rgba(255,212,53,.25)}
+header h1{font-size:17px;font-weight:800}
+header .sub{color:var(--dim);font-size:12px;margin-top:1px}
+.cost{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);border:1px solid var(--line);padding:6px 12px;border-radius:99px;transition:.2s}
+.cost.on{color:var(--cart);border-color:rgba(255,212,53,.4)}
+
+.wrap{display:grid;grid-template-columns:392px 1fr;gap:20px;padding:20px 26px;max-width:1460px;margin:0 auto}
+@media(max-width:960px){.wrap{grid-template-columns:1fr;padding:14px}}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.card h2{font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:var(--dim);margin-bottom:13px;font-weight:600}
+
+/* ---------- Form ---------- */
+label{display:block;font-size:12.5px;color:var(--dim);margin:12px 0 6px;font-weight:500}
+input[type=text],textarea,select{width:100%;background:var(--ink);border:1px solid var(--line);border-radius:11px;color:var(--text);padding:12px 14px;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--cart);box-shadow:0 0 0 3px var(--cart-soft)}
+textarea{resize:vertical;min-height:70px}
+.hint{font-size:11.5px;color:var(--dim);margin-top:6px;line-height:1.55}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* segmented */
+.seg{display:flex;background:var(--ink);border:1px solid var(--line);border-radius:11px;padding:3px;gap:3px}
+.seg button{flex:1;border:none;background:transparent;color:var(--dim);font-size:12.5px;font-weight:600;padding:9px 4px;border-radius:8px;transition:.15s}
+.seg button.on{background:var(--cart);color:#141414}
+.seg button small{display:block;font-weight:400;font-size:10px;opacity:.75}
+
+/* main button */
+.btn-main{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:800;margin-top:18px;background:var(--cart);color:#141414;transition:transform .1s,filter .15s,box-shadow .2s;box-shadow:0 4px 20px rgba(255,212,53,.18)}
+.btn-main:hover{filter:brightness(1.06)}
+.btn-main:active{transform:scale(.985)}
+.btn-main:disabled{background:#333a44;color:#7a8494;box-shadow:none;cursor:progress}
+.spinner{width:16px;height:16px;border:2.5px solid rgba(0,0,0,.25);border-top-color:#141414;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.btn-main:disabled .spinner{display:block;border-color:rgba(255,255,255,.15);border-top-color:#aab4c2}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* progress */
+.prog{display:none;margin-top:14px}
+.prog.show{display:block}
+.prog-bar{height:5px;background:var(--ink);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--cart),#FFE882);border-radius:99px;transition:width .5s ease}
+.prog-row{display:flex;justify-content:space-between;margin-top:8px;font-size:12px}
+.prog-stage{color:var(--text)}
+.prog-time{font-family:'JetBrains Mono',monospace;color:var(--dim)}
+.prog-note{font-size:11.5px;color:var(--dim);margin-top:6px;line-height:1.5;display:none}
+.prog-note.show{display:block}
+.prog-note.warn{color:var(--red)}
+
+/* ---------- Phone preview ---------- */
+.phone{width:196px;aspect-ratio:9/16;margin:14px auto 4px;border-radius:22px;border:2px solid var(--line2);background:linear-gradient(160deg,#242D39,#11151B);position:relative;overflow:hidden}
+.phone .hooktxt{position:absolute;top:33%;left:9%;right:9%;text-align:center;font-weight:800;font-size:13px;line-height:1.35;text-transform:uppercase;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.8);background:rgba(0,0,0,.35);padding:8px;border-radius:6px;transition:.2s}
+.phone .karaoke{position:absolute;bottom:26%;left:8%;right:14%;text-align:center;font-weight:700;font-size:10.5px;color:#fff;text-shadow:0 1px 4px #000}
+.phone .karaoke b{color:var(--cart)}
+.phone .cartbar{position:absolute;bottom:9%;left:7%;display:flex;align-items:center;gap:4px;background:var(--cart);color:#141414;font-size:8.5px;font-weight:800;padding:5px 9px;border-radius:99px}
+.phone .side{position:absolute;right:5%;bottom:24%;display:flex;flex-direction:column;gap:9px;font-size:11px;opacity:.5}
+.phone-cap{font-size:11px;color:var(--dim);text-align:center}
+
+/* ---------- Tabs ---------- */
+.tabs{display:flex;gap:4px;margin-bottom:16px;background:var(--ink);border:1px solid var(--line);border-radius:12px;padding:4px;width:fit-content;max-width:100%}
+.tab{padding:9px 18px;border-radius:9px;border:none;background:transparent;color:var(--dim);font-size:13px;font-weight:600;transition:.15s;white-space:nowrap}
+.tab.on{background:var(--panel2);color:var(--cart)}
+.tabpane{display:none}
+.tabpane.on{display:block;animation:fadein .2s}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.empty{color:var(--dim);font-size:14px;text-align:center;padding:64px 20px;line-height:1.8}
+.empty b{color:var(--cart)}
+
+/* skeleton */
+.skel{display:none}
+.skel.show{display:block}
+.sk{background:linear-gradient(90deg,var(--panel2) 25%,#232c38 50%,var(--panel2) 75%);background-size:400% 100%;animation:shim 1.3s infinite;border-radius:10px;margin-bottom:12px}
+@keyframes shim{0%{background-position:100% 0}100%{background-position:0 0}}
+
+/* ---------- Product summary ---------- */
+.prod-sum{display:flex;gap:14px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:14px 16px;margin-bottom:16px}
+.prod-sum img{width:58px;height:58px;border-radius:10px;object-fit:cover;background:var(--ink);flex-shrink:0}
+.prod-sum .nm{font-weight:800;font-size:14.5px;line-height:1.35}
+.prod-sum .pr{color:var(--cart);font-weight:800;font-size:13.5px;margin-top:3px}
+.prod-sum .tg{color:var(--dim);font-size:12px;margin-top:2px}
+
+/* ---------- Variant chips + script ---------- */
+.chips{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--ink);color:var(--dim);border-radius:99px;padding:8px 15px;font-size:12.5px;font-weight:700;transition:.15s}
+.chip.on{background:var(--cart);border-color:var(--cart);color:#141414}
+.chip .sm{font-weight:500;opacity:.75}
+
+.script-card{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:18px}
+.script-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.badge{font-size:10.5px;font-weight:800;letter-spacing:.5px;padding:4px 11px;border-radius:99px;background:var(--cart-soft);color:var(--cart);border:1px solid rgba(255,212,53,.3);text-transform:uppercase}
+.badge.mint{background:rgba(78,225,196,.09);color:var(--mint);border-color:rgba(78,225,196,.3)}
+.dur{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--dim)}
+.editable{font-size:14.5px;line-height:1.8;white-space:pre-wrap;outline:none;border-radius:10px;padding:10px;margin:-10px;transition:background .15s}
+.editable:hover{background:rgba(255,255,255,.025)}
+.editable:focus{background:var(--ink);box-shadow:0 0 0 2px var(--cart-soft)}
+.hookline{color:var(--cart);font-weight:800}
+.ctaline{color:var(--mint);font-weight:600}
+.edit-hint{font-size:11px;color:var(--dim);margin-top:10px;display:flex;align-items:center;gap:6px}
+.edit-hint::before{content:'✏';font-size:12px}
+
+.actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--ink);color:var(--text);border-radius:10px;padding:10px 16px;font-size:12.5px;font-weight:700;transition:.15s}
+.btn:hover{border-color:var(--cart);color:var(--cart)}
+.btn.primary{background:var(--cart);border-color:var(--cart);color:#141414}
+.btn.primary:hover{filter:brightness(1.07);color:#141414}
+
+.shots{margin-top:14px;background:var(--panel2);border:1px dashed var(--line2);border-radius:13px;padding:16px;font-size:13px;line-height:1.9;color:var(--dim)}
+.shots b{color:var(--text)}
+.shots .ck{display:flex;gap:9px;align-items:flex-start;cursor:pointer}
+.shots .ck input{margin-top:5px;accent-color:var(--cart)}
+.shots .ck.done span{text-decoration:line-through;opacity:.5}
+
+/* ---------- Specs ---------- */
+table{width:100%;border-collapse:collapse;font-size:14px}
+td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+td:first-child{color:var(--dim);width:38%}
+tr:hover td{background:rgba(255,255,255,.015)}
+
+/* ---------- Gallery ---------- */
+.gal-actions{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:11px}
+.imgbox{position:relative;border:2px solid var(--line);border-radius:11px;overflow:hidden;aspect-ratio:1;cursor:pointer;background:var(--ink);transition:.15s}
+.imgbox:hover{transform:translateY(-2px)}
+.imgbox img{width:100%;height:100%;object-fit:cover;display:block}
+.imgbox.sel{border-color:var(--cart)}
+.imgbox .tick{position:absolute;top:6px;right:6px;width:21px;height:21px;border-radius:50%;background:rgba(0,0,0,.55);display:grid;place-items:center;font-size:11px;color:#fff}
+.imgbox.sel .tick{background:var(--cart);color:#141414;font-weight:800}
+
+footer{padding:14px 26px 26px;color:var(--dim);font-size:11.5px;text-align:center}
+/* ---------- Thủ công & Nháp ---------- */
+.manual{display:none;background:var(--panel2);border:1px dashed var(--line2);border-radius:14px;padding:18px;margin-bottom:14px}
+.manual.show{display:block;animation:fadein .2s}
+.manual h3{font-size:13px;color:var(--cart);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.manual .sub2{font-size:11.5px;color:var(--dim);margin-bottom:8px}
+.drafts-bar{display:flex;gap:8px;align-items:center;margin-left:12px}
+.drafts-bar select{width:auto;max-width:190px;padding:7px 10px;font-size:12px;border-radius:9px}
+.drafts-bar .btn{padding:7px 10px;font-size:12px}
+td[contenteditable]{outline:none;border-radius:6px}
+td[contenteditable]:focus{background:var(--ink);box-shadow:0 0 0 2px var(--cart-soft)}
+.spec-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--cart);color:#141414;font-weight:700;font-size:13px;padding:11px 22px;border-radius:99px;opacity:0;transition:.25s;pointer-events:none;z-index:99;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">▶</div>
+  <div>
+    <h1>Trạm Kịch Bản</h1>
+    <div class="sub">Link → kịch bản + thông số + ảnh → project.json</div>
+  </div>
+  <div class="cost" id="cost">Gemini miễn phí · chưa chạy lần nào</div>
+  <div class="drafts-bar">
+    <select id="drafts"><option value="">📂 Nháp đã lưu…</option></select>
+    <button class="btn" id="delDraft" title="Xoá nháp đang chọn">🗑</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ CỘT TRÁI ============ -->
+  <div>
+    <div class="card">
+      <h2>Sản phẩm</h2>
+
+      <label>Link sản phẩm</label>
+      <input type="text" id="url" placeholder="https://shopee.vn/...  (Enter để chạy)">
+
+      <label>Mô tả bổ sung <span style="opacity:.6">(tuỳ chọn — dán mô tả từ trang càng tốt)</span></label>
+      <textarea id="extra" placeholder="Giá sale, điểm anh thấy hay, đối tượng nhắm tới…"></textarea>
+
+      <div class="grid2">
+        <div>
+          <label>Ngách kênh</label>
+          <select id="niche">
+            <option value="gia dụng thông minh">Gia dụng thông minh</option>
+            <option value="phụ kiện công nghệ">Phụ kiện công nghệ</option>
+            <option value="đồ tiện ích giá rẻ">Tiện ích giá rẻ</option>
+            <option value="khác">Khác</option>
+          </select>
+        </div>
+        <div>
+          <label>Giọng video</label>
+          <select id="voice"><option value="nam">Nam</option><option value="nu">Nữ</option></select>
+        </div>
+      </div>
+
+      <label>Nhóm hook ưu tiên</label>
+      <select id="hookgroup">
+        <option value="auto">AI tự chọn theo sản phẩm (khuyên dùng)</option>
+        <option value="gia_soc">Giá sốc</option><option value="noi_dau">Nỗi đau</option>
+        <option value="to_mo">Tò mò</option><option value="canh_bao">Cảnh báo</option>
+        <option value="trai_nghiem">Trải nghiệm</option><option value="so_sanh">So sánh</option>
+        <option value="khan_cap">Khẩn cấp</option>
+      </select>
+
+      <label>Chế độ AI <span style="opacity:.6">(cả 2 đều miễn phí)</span></label>
+      <div class="seg" id="modelSeg">
+        <button class="on" data-m="fast">⚡ Nhanh<small>Flash-Lite · hạn mức cao</small></button>
+        <button data-m="quality">💎 Chất lượng<small>Flash · viết kỹ hơn</small></button>
+      </div>
+      <div class="hint">Chạy bằng <b style="color:var(--cart)">Google Gemini (miễn phí)</b> — không tốn tiền. Bóc được trang thì tool tự tắt Google Search để tiết kiệm hạn mức free/ngày.</div>
+
+      <button class="btn-main" id="go"><span class="spinner"></span><span id="goTxt">⚡ Phân tích &amp; dựng kịch bản</span></button>
+
+      <div class="prog" id="prog">
+        <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+        <div class="prog-row">
+          <span class="prog-stage" id="progStage">Đang chuẩn bị…</span>
+          <span class="prog-time" id="progTime">0.0s</span>
+        </div>
+        <div class="prog-note" id="progNote"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Preview khung TikTok</h2>
+      <div class="phone">
+        <div class="hooktxt" id="phHook">HOOK SẼ HIỆN Ở ĐÂY</div>
+        <div class="karaoke" id="phKara">phụ đề <b>karaoke</b> ở đây</div>
+        <div class="side">❤<br>💬<br>↗</div>
+        <div class="cartbar">🛒 Giỏ hàng</div>
+      </div>
+      <div class="phone-cap" id="phCap">Tự đồng bộ theo phương án đang chọn</div>
+    </div>
+  </div>
+
+  <!-- ============ CỘT PHẢI ============ -->
+  <div class="card">
+    <div class="tabs">
+      <button class="tab on" data-t="script">📝 Kịch bản</button>
+      <button class="tab" data-t="specs">📋 Thông số</button>
+      <button class="tab" data-t="imgs">🖼 Ảnh <span id="imgCount"></span></button>
+    </div>
+
+    <!-- KỊCH BẢN -->
+    <div class="tabpane on" id="pane-script">
+      <div class="empty" id="scriptEmpty">Dán link → <b>Enter</b> hoặc bấm <b>⚡ Phân tích</b><br>Ra 3 phương án kịch bản · sửa trực tiếp · xuất project.json<br><br>
+        <button class="btn" id="btnManualOpen">✍️ Nhập thủ công — không cần AI, 0 đồng</button>
+      </div>
+
+      <!-- CHẾ ĐỘ THỦ CÔNG: sinh kịch bản offline từ 25 công thức hook -->
+      <div class="manual" id="manualPanel">
+        <h3>✍️ Chế độ thủ công <span class="badge mint">offline · không tốn API</span></h3>
+        <div class="sub2">Điền thông tin sản phẩm → tool tự lắp hook + ý chính + CTA thành kịch bản ngay trên máy. Dùng khi API lỗi/hết credit, hoặc đơn giản là muốn nhanh.</div>
+        <div class="grid2">
+          <div><label>Tên sản phẩm đầy đủ *</label><input type="text" id="mTen" placeholder="Quạt kẹp mini pin sạc 40 giờ"></div>
+          <div><label>Tên gọn (2-4 từ) *</label><input type="text" id="mTenNgan" placeholder="quạt kẹp mini"></div>
+        </div>
+        <div class="grid2">
+          <div><label>Giá hiển thị *</label><input type="text" id="mGia" placeholder="129 nghìn"></div>
+          <div><label>Đối tượng</label><input type="text" id="mDoiTuong" placeholder="dân văn phòng, mẹ bỉm"></div>
+        </div>
+        <label>Vấn đề sản phẩm giải quyết (nỗi đau) *</label>
+        <input type="text" id="mVanDe" placeholder="nóng nực mà quạt trần thì xa, quạt cây thì vướng">
+        <label>Ý chính bán hàng (mỗi dòng 1 ý, 3-5 ý) *</label>
+        <textarea id="mYChinh" style="min-height:100px" placeholder="Pin trâu 40 giờ, sạc 1 lần dùng cả tuần
+Kẹp được mọi nơi: bàn, xe đẩy, đầu giường
+Xoay 360 độ, 3 tốc độ gió
+Êm ru dưới 40dB, ngủ cạnh không nghe tiếng"></textarea>
+        <div class="grid2">
+          <div><label>Chọn hook</label><select id="mHook"></select></div>
+          <div><label>CTA</label><select id="mCta"></select></div>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="mBuild">🛠 Tạo kịch bản offline</button>
+          <button class="btn" id="mClose">Đóng</button>
+        </div>
+      </div>
+
+      <div class="skel" id="scriptSkel">
+        <div class="sk" style="height:64px"></div>
+        <div class="sk" style="height:36px;width:60%"></div>
+        <div class="sk" style="height:180px"></div>
+      </div>
+      <div id="scriptOut" style="display:none">
+        <div class="prod-sum" id="prodSum"></div>
+        <div class="chips" id="chips"></div>
+        <div class="script-card">
+          <div class="script-head" id="scriptHead"></div>
+          <div class="editable" id="scriptBody" contenteditable="true" spellcheck="false"></div>
+          <div class="edit-hint">Bấm vào chữ để sửa trực tiếp — bản sửa sẽ được dùng khi copy / xuất file</div>
+          <div class="actions">
+            <button class="btn primary" id="btnJson">⬇ project.json</button>
+            <button class="btn" id="btnCopy">📋 Copy kịch bản</button>
+            <button class="btn" id="btnSave">💾 Lưu nháp</button>
+            <button class="btn" id="btnRedo" title="Chạy lại có bật Google Search — dùng khi nghi số liệu chưa chuẩn">🔄 Chạy lại + search</button>
+          </div>
+        </div>
+        <div class="shots" id="shots"></div>
+      </div>
+    </div>
+
+    <!-- THÔNG SỐ -->
+    <div class="tabpane" id="pane-specs">
+      <div class="empty" id="specsEmpty">Chưa có dữ liệu.<br><br><button class="btn" id="btnSpecsManual">✍️ Nhập thông số thủ công</button></div>
+      <div id="specsOut"></div>
+    </div>
+
+    <!-- ẢNH -->
+    <div class="tabpane" id="pane-imgs">
+      <div class="empty" id="imgsEmpty">Tool tự bóc ảnh từ trang sản phẩm.<br><br>Nếu trang chặn: mở trang → chuột phải ảnh → <b>Copy image address</b> → dán vào ô dưới.</div>
+      <div id="imgsOut" style="display:none">
+        <div class="gal-actions">
+          <button class="btn" id="selAll">Chọn tất cả</button>
+          <button class="btn primary" id="dlSel">⬇ Tải ảnh đã chọn</button>
+          <button class="btn" id="cpUrls">Copy URL</button>
+        </div>
+        <div class="gallery" id="gallery"></div>
+      </div>
+      <label style="margin-top:16px">Thêm ảnh thủ công (mỗi dòng 1 URL)</label>
+      <textarea id="manualImgs" placeholder="https://down-vn.img.susercontent.com/file/..."></textarea>
+      <button class="btn" style="margin-top:8px" id="addImgs">＋ Thêm vào thư viện</button>
+    </div>
+  </div>
+</div>
+
+<footer>Trạm Kịch Bản v3.0 · chạy bằng Google Gemini miễn phí · AI hoặc thủ công offline đều ra project.json · đầu ra cắm thẳng Video Factory</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+let DATA=null, IMAGES=[], CUR=0, EDITS={};  // EDITS[i] = bản kịch bản đã sửa tay
+
+/* ===== 25 HOOK OFFLINE (đồng bộ hooks_vi.json của Factory) ===== */
+const HOOKS=[
+ [1,"gia_soc","{gia} mà làm được điều này thì quá vô lý…"],[2,"gia_soc","Đừng bỏ {gia} mua {ten} trước khi xem hết video này"],
+ [3,"gia_soc","Tôi đã nghĩ {ten} là đồ bỏ đi, cho đến khi…"],[4,"gia_soc","Rẻ như này mà xịn vậy, chắc chắn shop nhập nhầm giá"],
+ [5,"noi_dau","Ai hay bực mình vì {van_de} thì dừng lại 30 giây"],[6,"noi_dau","{van_de}? Đây là thứ chấm dứt chuyện đó vĩnh viễn"],
+ [7,"noi_dau","Nhà nào cũng gặp cảnh {van_de} mà không biết cái này tồn tại"],[8,"noi_dau","Tôi chịu đựng {van_de} suốt 2 năm, lẽ ra phải mua cái này sớm hơn"],
+ [9,"to_mo","99% mọi người không biết {ten} còn làm được điều này"],[10,"to_mo","Thứ này đang cháy hàng và đây là lý do"],
+ [11,"to_mo","Vì sao dân kỹ thuật như tôi lại chấm cái này 9/10?"],[12,"to_mo","Cái này là gì mà 10 người xem 8 người mua?"],
+ [13,"to_mo","Xem đến giây thứ 10 là bạn hiểu vì sao nó viral"],[14,"canh_bao","Đừng mua {ten} nếu bạn chưa biết 3 điều này"],
+ [15,"canh_bao","Sự thật về {ten} mà người bán không nói cho bạn"],[16,"canh_bao","Mua {ten} kiểu này là mất tiền oan"],
+ [17,"trai_nghiem","Ngày thứ 30 dùng {ten}: nói thật lòng"],[18,"trai_nghiem","Tôi mua {ten} về test cho mọi người khỏi mất tiền thử"],
+ [19,"trai_nghiem","Trên tay {ten} vừa về: đập hộp và test luôn"],[20,"trai_nghiem","Vợ tôi bảo phí tiền, 1 tuần sau chính vợ tôi dùng nhiều nhất"],
+ [21,"so_sanh","{ten} {gia} đấu với hàng 5 triệu: kết quả gây sốc"],[22,"so_sanh","Cùng công dụng, chênh nhau cả triệu bạc — khác gì nhau?"],
+ [23,"khan_cap","Sắp Tết rồi, nhà nào chưa có {ten} là thiệt"],[24,"khan_cap","Deal này hết hôm nay, tôi nói trước để khỏi tiếc"],
+ [25,"khan_cap","Giá này chỉ còn vài giờ, xem nhanh còn kịp"]];
+const CTAS=[
+ "Giỏ hàng màu vàng góc trái, vào xem giá hôm nay nhé!",
+ "Ấn vào giỏ hàng bên dưới để săn giá sale trước khi hết!",
+ "Link ở giỏ hàng vàng, giá đang tốt lắm, nhanh tay nha!",
+ "Muốn mua đúng loại này thì bấm giỏ hàng góc trái màn hình nhé!"];
+function fillHook(mau,p){return mau.replace(/\{ten\}/g,p.ten_ngan||p.ten||'sản phẩm').replace(/\{gia\}/g,p.gia_hien_thi||'').replace(/\{van_de\}/g,p.van_de||'').replace(/\s+/g,' ').trim()}
+
+/* ===== Lưu nháp: localStorage có lớp bảo vệ (môi trường không hỗ trợ thì dùng bộ nhớ tạm) ===== */
+const _mem={};
+const store={
+  get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return _mem[k]||null}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){_mem[k]=v}},
+  del(k){try{localStorage.removeItem(k)}catch(e){delete _mem[k]}}
+};
+const DKEY='tkb_drafts';
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200)}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+/* Tabs */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');$('pane-'+t.dataset.t).classList.add('on');
+});
+
+/* Model segmented */
+let MODEL='fast';
+$('modelSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  $('modelSeg').querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');MODEL=b.dataset.m;
+});
+
+/* Enter để chạy */
+$('url').addEventListener('keydown',e=>{if(e.key==='Enter')$('go').click()});
+
+/* ---------- Progress ---------- */
+let timerInt=null,t0=0;
+function progStart(){
+  $('prog').classList.add('show');$('progNote').className='prog-note';$('progNote').textContent='';
+  t0=Date.now();$('progFill').style.width='6%';
+  timerInt=setInterval(()=>{$('progTime').textContent=((Date.now()-t0)/1000).toFixed(1)+'s'},100);
+}
+function progStage(pct,label){$('progFill').style.width=pct+'%';$('progStage').textContent=label}
+function progNote(msg,warn){const n=$('progNote');n.textContent=msg;n.className='prog-note show'+(warn?' warn':'')}
+function progEnd(ok){
+  clearInterval(timerInt);
+  progStage(100, ok?'✅ Hoàn tất':'❌ Có lỗi');
+  if(!ok)$('progFill').style.background='var(--red)';
+  else $('progFill').style.background='linear-gradient(90deg,var(--cart),#FFE882)';
+}
+
+/* ---------- Hiển thị trạng thái lần chạy (Gemini free tier — không tính tiền) ---------- */
+function showCost(meta){
+  if(!meta)return;
+  const tk=meta.usage?(meta.usage.totalTokenCount||((meta.usage.promptTokenCount||0)+(meta.usage.candidatesTokenCount||0))):null;
+  const el=$('cost');
+  el.textContent=`Gemini miễn phí · ${(meta.ms/1000).toFixed(1)}s${meta.searched?' · có Google Search':' · không search 🎉'}${tk?` · ${tk.toLocaleString('vi-VN')} token`:''}`;
+  el.classList.add('on');
+}
+
+/* ---------- API ---------- */
+async function scrapeServer(url){
+  try{
+    const r=await fetch('/api/scrape?url='+encodeURIComponent(url),{signal:AbortSignal.timeout(12000)});
+    return r.ok?await r.json():null;
+  }catch(e){return null}
+}
+async function generate(payload){
+  const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(!r.ok)throw new Error('Server lỗi '+r.status);
+  const d=await r.json();
+  if(d.error)throw new Error(d.error);
+  return d;
+}
+
+/* ---------- Nút chính ---------- */
+let LAST_PAYLOAD=null;
+$('go').onclick=()=>run(false);
+$('btnRedo')&&($('btnRedo').onclick=()=>{});// gán lại sau render
+async function run(forceSearch){
+  const url=$('url').value.trim(),extra=$('extra').value.trim();
+  if(!url&&!extra){toast('Cần link hoặc mô tả sản phẩm');return}
+  $('go').disabled=true;$('goTxt').textContent='Đang chạy…';
+  $('scriptEmpty').style.display='none';$('scriptOut').style.display='none';$('scriptSkel').classList.add('show');
+  progStart();
+  IMAGES=[];DATA=null;EDITS={};renderGallery();
+
+  // B1: bóc trang (nhanh, timeout 8s phía server)
+  let scraped=null;
+  if(url){
+    progStage(15,'Đang bóc trang sản phẩm…');
+    scraped=await scrapeServer(url);
+    if(scraped?.ok){
+      if(scraped.images?.length){IMAGES=scraped.images;renderGallery()}
+      progStage(35,`Bóc được: ${(scraped.title||'').slice(0,40)}…`);
+      progNote(`✓ ${scraped.images?.length||0} ảnh · Google Search sẽ TẮT để chạy nhanh + tiết kiệm hạn mức`);
+    }else{
+      progStage(30,'Trang chặn — chuyển sang Google Search');
+      progNote('✗ '+(scraped?.note||'Không bóc được')+' → AI tự nghiên cứu qua Google (chậm hơn chút)',true);
+    }
+  }else progStage(30,'Không có link — dùng mô tả');
+
+  // B2: AI
+  try{
+    progStage(forceSearch||!(scraped?.ok)?45:55,'AI đang viết 3 phương án kịch bản…');
+    LAST_PAYLOAD={url,scraped:scraped?.ok?scraped:null,extra,niche:$('niche').value,voice:$('voice').value,hookgroup:$('hookgroup').value,model:MODEL,forceSearch};
+    const d=await generate(LAST_PAYLOAD);
+    DATA=d;showCost(d._meta);
+    renderAll(d);
+    progEnd(true);
+    toast('Xong! Chọn phương án và sửa trực tiếp nếu cần');
+  }catch(e){
+    progEnd(false);progNote('✗ '+e.message+' — Anh vẫn có thể dùng "✍️ Nhập thủ công" bên dưới (0 đồng, không cần API)',true);
+    $('scriptEmpty').style.display='block';
+    toast('API lỗi — chuyển chế độ thủ công vẫn làm việc được');
+  }
+  $('scriptSkel').classList.remove('show');
+  $('go').disabled=false;$('goTxt').textContent='⚡ Phân tích & dựng kịch bản';
+}
+
+/* ---------- Render ---------- */
+function renderAll(d){
+  const p=d.san_pham||{};
+  // tóm tắt sản phẩm
+  const thumb=IMAGES[0]?`<img src="${esc(IMAGES[0])}" onerror="this.style.display='none'">`:'';
+  $('prodSum').innerHTML=`${thumb}<div>
+    <div class="nm">${esc(p.ten||'')}</div>
+    <div class="pr">${esc(p.gia_hien_thi||'')}</div>
+    <div class="tg">👤 ${esc(p.doi_tuong||'—')}</div></div>`;
+  // chips
+  const chips=$('chips');chips.innerHTML='';
+  (d.kich_ban||[]).forEach((k,i)=>{
+    const c=document.createElement('button');c.className='chip'+(i===0?' on':'');
+    c.innerHTML=`PA ${i+1} <span class="sm">· ${esc(k.nhom||'')}</span>`;
+    c.onclick=()=>{saveEdit();CUR=i;chips.querySelectorAll('.chip').forEach((x,j)=>x.classList.toggle('on',j===i));renderScript()};
+    chips.appendChild(c);
+  });
+  CUR=0;renderScript();
+  // cảnh quay dạng checklist
+  $('shots').innerHTML='<b>🎥 Cảnh cần quay (tick khi xong):</b><br>'+
+    (d.canh_quay||[]).map((c,i)=>`<label class="ck"><input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)"><span>${esc(c)}</span></label>`).join('');
+  $('scriptOut').style.display='block';
+  renderSpecs();
+  document.querySelector('.tab[data-t="script"]').click();
+}
+
+/* ===== THÔNG SỐ: bảng sửa trực tiếp + thêm/xoá dòng ===== */
+function renderSpecs(){
+  const p=DATA?.san_pham||{};
+  $('specsEmpty').style.display='none';
+  const rows=(p.thong_so||[]).map((t,i)=>
+    `<tr><td contenteditable spellcheck="false" data-i="${i}" data-f="ten">${esc(t.ten)}</td><td contenteditable spellcheck="false" data-i="${i}" data-f="gia_tri">${esc(t.gia_tri)}</td></tr>`).join('');
+  $('specsOut').innerHTML=`
+    <table id="specTable">${rows}</table>
+    <div class="spec-actions">
+      <button class="btn" id="specAdd">＋ Thêm dòng</button>
+      <button class="btn" id="specDel">－ Xoá dòng cuối</button>
+    </div>
+    <div class="edit-hint">Bấm vào ô để sửa — thông số sẽ được lưu kèm nháp và ghi vào project.json</div>
+    <label style="margin-top:16px">5 ý bán hàng chủ lực</label>
+    <div class="shots" style="margin-top:6px">${(p.y_chinh||[]).map((y,i)=>`<b>${i+1}.</b> ${esc(y)}`).join('<br>')||'<i>—</i>'}</div>`;
+  $('specAdd').onclick=()=>{syncSpecs();(DATA.san_pham.thong_so=DATA.san_pham.thong_so||[]).push({ten:'Thông số mới',gia_tri:'…'});renderSpecs()};
+  $('specDel').onclick=()=>{syncSpecs();(DATA.san_pham.thong_so||[]).pop();renderSpecs()};
+}
+function syncSpecs(){
+  if(!DATA)return;
+  const cells=document.querySelectorAll('#specTable td[contenteditable]');
+  const ts=DATA.san_pham.thong_so||[];
+  cells.forEach(c=>{const i=+c.dataset.i;if(ts[i])ts[i][c.dataset.f]=c.innerText.trim()});
+}
+
+/* ===== CHẾ ĐỘ THỦ CÔNG (offline, 0 đồng) ===== */
+(function initManual(){
+  $('mHook').innerHTML=HOOKS.map(h=>`<option value="${h[0]}">#${h[0]} [${h[1]}] ${h[2]}</option>`).join('');
+  $('mCta').innerHTML=CTAS.map((c,i)=>`<option value="${i}">${c}</option>`).join('');
+  const open=()=>{ $('manualPanel').classList.add('show');document.querySelector('.tab[data-t="script"]').click() };
+  $('btnManualOpen').onclick=open;
+  $('btnSpecsManual').onclick=open;
+  $('mClose').onclick=()=>$('manualPanel').classList.remove('show');
+  $('mBuild').onclick=()=>{
+    const p={
+      ten:$('mTen').value.trim(),ten_ngan:$('mTenNgan').value.trim(),
+      gia_hien_thi:$('mGia').value.trim(),van_de:$('mVanDe').value.trim(),
+      doi_tuong:$('mDoiTuong').value.trim(),
+      y_chinh:$('mYChinh').value.split('\n').map(s=>s.trim()).filter(Boolean),
+      thong_so:DATA?.san_pham?.thong_so||[]
+    };
+    if(!p.ten||!p.ten_ngan||!p.gia_hien_thi||!p.van_de||p.y_chinh.length<2){toast('Điền đủ các trường có dấu * và ít nhất 2 ý chính');return}
+    const cta=CTAS[+$('mCta').value];
+    const mainId=+$('mHook').value;
+    // 3 phương án: hook đã chọn + 2 hook nhóm khác (chọn ngẫu nhiên)
+    const main=HOOKS.find(h=>h[0]===mainId);
+    const others=HOOKS.filter(h=>h[1]!==main[1]).sort(()=>Math.random()-.5);
+    const pick=[main,others[0],others.find(h=>h[1]!==others[0][1])||others[1]];
+    const body=p.y_chinh.join('. ');
+    DATA={
+      san_pham:p,
+      kich_ban:pick.map(h=>({
+        ten_phuong_an:'Thủ công',hook_id:h[0],nhom:h[1],hook:fillHook(h[2],p),
+        noi_dung:`${body}. Giá hiện tại chỉ ${p.gia_hien_thi}.`,cta,
+        thoi_luong_giay:Math.round((body.split(' ').length+25)/3.3)
+      })),
+      canh_quay:[
+        `Đập hộp ${p.ten_ngan}, quay cận tay cầm sản phẩm`,
+        `Cận chi tiết nổi bật nhất (chất liệu / màn hình / nút bấm)`,
+        `Demo đúng cảnh "${p.van_de}" rồi dùng sản phẩm giải quyết`,
+        `Quay sản phẩm đang hoạt động ở góc nghiêng 45 độ`,
+        `Cảnh kết: sản phẩm + tay chỉ xuống góc giỏ hàng`
+      ]
+    };
+    EDITS={};IMAGES=IMAGES||[];
+    $('manualPanel').classList.remove('show');$('scriptEmpty').style.display='none';
+    renderAll(DATA);showCostManual();
+    toast('Đã tạo kịch bản offline — 0 đồng 🎉');
+  };
+})();
+function showCostManual(){const el=$('cost');el.textContent='lần này = 0đ (thủ công offline) 🎉';el.classList.add('on')}
+
+/* ===== NHÁP: lưu / mở / xoá ===== */
+function draftsAll(){return store.get(DKEY)||{}}
+function renderDrafts(){
+  const all=draftsAll();
+  $('drafts').innerHTML='<option value="">📂 Nháp đã lưu…</option>'+
+    Object.keys(all).sort((a,b)=>all[b].ts-all[a].ts).map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join('');
+}
+function saveDraft(){
+  if(!DATA){toast('Chưa có gì để lưu');return}
+  saveEdit();syncSpecs();
+  const name=(DATA.san_pham?.ten_ngan||'nhap')+' · '+new Date().toLocaleDateString('vi-VN');
+  const all=draftsAll();
+  all[name]={ts:Date.now(),data:DATA,edits:EDITS,images:IMAGES,url:$('url').value,voice:$('voice').value};
+  // giữ tối đa 15 nháp mới nhất
+  const keys=Object.keys(all).sort((a,b)=>all[b].ts-all[a].ts);
+  keys.slice(15).forEach(k=>delete all[k]);
+  store.set(DKEY,all);renderDrafts();
+  toast('💾 Đã lưu nháp: '+name);
+}
+$('drafts').onchange=()=>{
+  const k=$('drafts').value;if(!k)return;
+  const d=draftsAll()[k];if(!d){toast('Nháp không tồn tại');return}
+  DATA=d.data;EDITS=d.edits||{};IMAGES=d.images||[];
+  $('url').value=d.url||'';if(d.voice)$('voice').value=d.voice;
+  $('scriptEmpty').style.display='none';renderGallery();renderAll(DATA);
+  toast('📂 Đã mở nháp');
+};
+$('delDraft').onclick=()=>{
+  const k=$('drafts').value;if(!k){toast('Chọn nháp cần xoá trong ô bên cạnh');return}
+  const all=draftsAll();delete all[k];store.set(DKEY,all);renderDrafts();
+  toast('🗑 Đã xoá nháp');
+};
+renderDrafts();
+
+function fullText(k){return `${k.hook}. ${k.noi_dung} ${k.cta}`}
+function renderScript(){
+  const k=DATA.kich_ban[CUR];
+  $('scriptHead').innerHTML=`
+    <span class="badge">Phương án ${CUR+1}</span>
+    <span class="badge mint">${esc(k.nhom)} · hook #${k.hook_id}</span>
+    <span class="dur">≈${k.thoi_luong_giay||35}s đọc</span>`;
+  const body=$('scriptBody');
+  if(EDITS[CUR]!=null){body.textContent=EDITS[CUR]}
+  else body.innerHTML=`<span class="hookline">${esc(k.hook)}</span>\n\n${esc(k.noi_dung)}\n\n<span class="ctaline">${esc(k.cta)}</span>`;
+  // preview phone
+  $('phHook').textContent=(EDITS[CUR]?EDITS[CUR].split('.')[0]:k.hook).toUpperCase();
+  const w=k.noi_dung.split(' ');
+  $('phKara').innerHTML=esc(w.slice(0,4).join(' '))+' <b>'+esc(w[4]||'')+'</b>';
+  // nút
+  $('btnCopy').onclick=()=>{saveEdit();navigator.clipboard.writeText(currentText());toast('Đã copy kịch bản')};
+  $('btnJson').onclick=()=>{saveEdit();syncSpecs();downloadJson()};
+  $('btnSave').onclick=saveDraft;
+  $('btnRedo').onclick=()=>run(true);
+}
+function saveEdit(){
+  const t=$('scriptBody').innerText.trim();
+  const k=DATA?.kich_ban?.[CUR];if(!k)return;
+  if(t && t!==`${k.hook}\n\n${k.noi_dung}\n\n${k.cta}`.trim()) EDITS[CUR]=t;
+}
+function currentText(){
+  const k=DATA.kich_ban[CUR];
+  return EDITS[CUR]!=null?EDITS[CUR].replace(/\n+/g,' '):fullText(k);
+}
+function downloadJson(){
+  const p=DATA.san_pham||{},k=DATA.kich_ban[CUR];
+  const pj={
+    ten_video:(p.ten_ngan||'video').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,''),
+    giong:$('voice').value,hook_id:k.hook_id||null,nhac_nen:null,
+    san_pham:{ten:p.ten,ten_ngan:p.ten_ngan,gia_hien_thi:p.gia_hien_thi,van_de:p.van_de,y_chinh:p.y_chinh||[],thong_so:p.thong_so||[]},
+    kich_ban:currentText(),cta:k.cta
+  };
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(pj,null,2)],{type:'application/json'}));
+  a.download='project.json';a.click();
+  toast('Đã tải project.json — bỏ vào thư mục project của Factory');
+}
+
+/* ---------- Gallery ---------- */
+function renderGallery(){
+  $('imgCount').textContent=IMAGES.length?'('+IMAGES.length+')':'';
+  if(!IMAGES.length){$('imgsEmpty').style.display='block';$('imgsOut').style.display='none';return}
+  $('imgsEmpty').style.display='none';$('imgsOut').style.display='block';
+  const g=$('gallery');g.innerHTML='';
+  IMAGES.forEach(u=>{
+    const b=document.createElement('div');b.className='imgbox sel';b.dataset.url=u;
+    b.innerHTML=`<img loading="lazy" src="${esc(u)}" onerror="if(!this.dataset.p){this.dataset.p=1;this.src='/api/img?u='+encodeURIComponent(this.parentElement.dataset.url)}else{this.parentElement.remove()}"><div class="tick">✓</div>`;
+    b.onclick=()=>b.classList.toggle('sel');
+    g.appendChild(b);
+  });
+}
+$('addImgs').onclick=()=>{
+  const urls=$('manualImgs').value.split('\n').map(s=>s.trim()).filter(s=>/^https?:\/\//.test(s));
+  if(!urls.length){toast('Chưa có URL hợp lệ');return}
+  IMAGES=[...new Set([...IMAGES,...urls])];$('manualImgs').value='';renderGallery();toast('Đã thêm '+urls.length+' ảnh');
+};
+$('selAll').onclick=()=>document.querySelectorAll('.imgbox').forEach(b=>b.classList.add('sel'));
+$('cpUrls').onclick=()=>{
+  const urls=[...document.querySelectorAll('.imgbox.sel')].map(b=>b.dataset.url);
+  navigator.clipboard.writeText(urls.join('\n'));toast('Đã copy '+urls.length+' URL');
+};
+$('dlSel').onclick=async()=>{
+  const boxes=[...document.querySelectorAll('.imgbox.sel')];
+  if(!boxes.length){toast('Chưa chọn ảnh nào');return}
+  toast('Đang tải '+boxes.length+' ảnh…');
+  let ok=0;
+  for(let i=0;i<boxes.length;i++){
+    const u=boxes[i].dataset.url;
+    try{
+      let blob=null;
+      try{const r=await fetch(u,{signal:AbortSignal.timeout(9000)});if(r.ok)blob=await r.blob()}catch(e){}
+      if(!blob||blob.size<1000){const r2=await fetch('/api/img?u='+encodeURIComponent(u),{signal:AbortSignal.timeout(15000)});if(r2.ok)blob=await r2.blob()}
+      if(blob&&blob.size>1000){
+        const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+        const ext=(u.match(/\.(jpe?g|png|webp)/i)||[,'jpg'])[1];
+        a.download=`sanpham_${String(i+1).padStart(2,'0')}.${ext}`;a.click();
+        URL.revokeObjectURL(a.href);ok++;
+        await new Promise(r=>setTimeout(r,300));
+      }
+    }catch(e){}
+  }
+  toast(ok?`Đã tải ${ok}/${boxes.length} ảnh`:'CDN chặn hết — dùng Copy URL rồi tải bằng trình duyệt');
+};
+</script>
+</body>
+</html>

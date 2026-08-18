@@ -1,14 +1,14 @@
-// api/generate.js — v3.0: dùng GOOGLE GEMINI API (MIỄN PHÍ qua Google AI Studio)
-// Không cần thẻ tín dụng, không hết hạn. Free tier: Flash/Flash-Lite ~1.000-1.500 request/ngày,
-// Google Search grounding miễn phí 5.000 lượt/tháng — dư sức cho vài chục sản phẩm/ngày.
-// Lấy key miễn phí tại: https://aistudio.google.com/apikey (chỉ cần tài khoản Google)
+// api/generate.js — v3.1: dùng SDK CHÍNH THỨC @google/genai (thay vì tự gọi REST bằng fetch)
+//
+// LÝ DO ĐỔI: từ ~giữa 2026, Google chuyển API key sang định dạng mới "AQ.Ab..." (Auth key),
+// thay cho định dạng cũ "AIzaSy..." (Standard key). Gọi REST thủ công kiểu cũ (?key=... trên URL)
+// bị 401 với nhiều tài khoản dùng key mới. Dùng SDK chính thức để Google tự lo phần xác thực,
+// không phụ thuộc vào cách key được định dạng — ổn định hơn về lâu dài.
+//
+// Free tier: Flash/Flash-Lite ~1.000-1.500 request/ngày, Google Search grounding free 5.000 lượt/tháng.
+// Lấy key miễn phí tại: https://aistudio.google.com/apikey (chỉ cần tài khoản Google, không cần thẻ)
 //
 // POST { url, scraped, extra, niche, voice, hookgroup, model:'fast'|'quality', forceSearch:bool }
-//
-// LOGIC TIẾT KIỆM HẠN MỨC (dù đã free, vẫn có rate limit/ngày nên vẫn nên tiết kiệm):
-// - Bóc được trang đủ dữ liệu → TẮT Google Search grounding, trả lời thẳng (nhanh hơn, đỡ tốn lượt search)
-// - Trang chặn / thiếu dữ liệu / forceSearch → bật Google Search grounding
-// - model 'fast' = Gemini 2.5 Flash-Lite (hạn mức ngày cao nhất), 'quality' = Gemini 2.5 Flash
 
 const MODELS = {
   fast: "gemini-2.5-flash-lite",
@@ -92,48 +92,34 @@ CHỈ TRẢ VỀ JSON, không kèm markdown, không giải thích gì thêm:
 "canh_quay":["5-7 cảnh quay cụ thể"]}`;
 
   const modelName = MODELS[model] || MODELS.fast;
-  const body = {
-    contents: [{ role: "user", parts: [{ text: prompt }] }],
-    generationConfig: { maxOutputTokens: 2400, temperature: 0.9 },
-  };
-  // Gemini KHÔNG cho kết hợp google_search với các tool khác trong cùng request — ở đây ta chỉ dùng
-  // duy nhất search nên không xung đột. Không bật responseMimeType=json khi có tool để tránh lỗi 400
-  // trên một số phiên bản model; JSON được ép qua prompt + parse tay bên dưới (ổn định hơn, mọi model).
+  const config = { maxOutputTokens: 2400, temperature: 0.9 };
+  // Không kết hợp googleSearch với responseMimeType=json trong cùng 1 lần gọi (Gemini không cho phép
+  // trộn search tool với JSON ép cứng ở một số phiên bản model) — JSON luôn được ép qua prompt + parse
+  // tay bên dưới, ổn định với mọi model/mọi trường hợp có/không search.
   if (useSearch) {
-    body.tools = [{ google_search: {} }];
+    config.tools = [{ googleSearch: {} }];
   } else {
-    body.generationConfig.responseMimeType = "application/json";
+    config.responseMimeType = "application/json";
   }
 
   try {
     const t0 = Date.now();
-    const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(45000),
-      }
-    );
+    // Dynamic import: package @google/genai là ESM, import kiểu này an toàn dù file này là CommonJS
+    const { GoogleGenAI } = await import("@google/genai");
+    const ai = new GoogleGenAI({ apiKey });
 
-    if (r.status === 429) {
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents: prompt,
+      config,
+    });
+
+    const text = response.text || "";
+    if (!text) {
       return res.status(200).json({
-        error: "Đã chạm hạn mức free trong phút/ngày hôm nay (hiếm khi xảy ra với dùng cá nhân) — đợi 1-2 phút rồi thử lại, hoặc dùng chế độ ✍️ Nhập thủ công bên dưới.",
+        error: "Gemini không trả về nội dung (có thể do bộ lọc an toàn hoặc quá tải) — thử lại hoặc dùng chế độ ✍️ Thủ công",
       });
     }
-    if (!r.ok) {
-      const t = await r.text();
-      console.error("Gemini API:", r.status, t.slice(0, 500));
-      return res.status(200).json({ error: `Gemini API lỗi ${r.status} — kiểm tra GEMINI_API_KEY trong Environment Variables` });
-    }
-
-    const data = await r.json();
-    const cand = data.candidates && data.candidates[0];
-    if (!cand) {
-      return res.status(200).json({ error: "Gemini không trả về nội dung (có thể do bộ lọc an toàn) — thử sửa lại mô tả hoặc dùng chế độ thủ công" });
-    }
-    const text = (cand.content?.parts || []).map((p) => p.text || "").join("\n");
     const m = text.replace(/```json|```/g, "").match(/\{[\s\S]*\}/);
     if (!m) return res.status(200).json({ error: "AI không trả JSON hợp lệ, bấm chạy lại" });
 
@@ -142,12 +128,19 @@ CHỈ TRẢ VỀ JSON, không kèm markdown, không giải thích gì thêm:
       model: modelName,
       searched: useSearch,
       ms: Date.now() - t0,
-      usage: data.usageMetadata || null,
+      usage: response.usageMetadata || null,
       free: true,
     };
     return res.status(200).json(out);
   } catch (e) {
-    console.error(e);
-    return res.status(200).json({ error: "Lỗi server: " + e.message });
+    console.error("Gemini SDK error:", e);
+    const status = e?.status || e?.code || (e?.message?.match(/\b(4\d\d|5\d\d)\b/) || [])[1];
+    let hint = "";
+    if (status == 401 || status == 403) {
+      hint = " — kiểm tra lại GEMINI_API_KEY đã dán đúng vào Environment Variables trên Vercel và đã Redeploy chưa.";
+    } else if (status == 429) {
+      hint = " — có thể đã chạm hạn mức free tạm thời, đợi 1-2 phút rồi thử lại, hoặc dùng chế độ ✍️ Thủ công.";
+    }
+    return res.status(200).json({ error: `Gemini lỗi: ${e?.message || "không rõ nguyên nhân"}${hint}` });
   }
 };

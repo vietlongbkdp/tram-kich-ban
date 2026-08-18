@@ -1,6 +1,9 @@
 {
   "name": "tram-kich-ban",
-  "version": "2.0.0",
-  "description": "Trạm Kịch Bản — link sản phẩm → kịch bản + thông số + ảnh → project.json cho TikTok Shop Video Factory",
-  "engines": { "node": ">=18" }
+  "version": "3.1.0",
+  "description": "Trạm Kịch Bản — link sản phẩm → kịch bản + thông số + ảnh → project.json cho TikTok Shop Video Factory. Chạy bằng Google Gemini free tier qua SDK chính thức.",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@google/genai": ">=1.0.0 <3.0.0"
+  }
 }

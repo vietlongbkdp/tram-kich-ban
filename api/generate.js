@@ -10,9 +10,12 @@
 //
 // POST { url, scraped, extra, niche, voice, hookgroup, model:'fast'|'quality', forceSearch:bool }
 
+// LƯU Ý: Google đổi tên model khá thường xuyên (2.0 → 2.5 → 3.x chỉ trong vài tháng 2026).
+// Mặc định dùng thế hệ 3.5 hiện tại. Nếu Google lại khai tử model, ĐỔI TÊN QUA ENV VAR trên Vercel
+// (GEMINI_MODEL_FAST / GEMINI_MODEL_QUALITY) — không cần sửa code, chỉ cần Redeploy.
 const MODELS = {
-  fast: "gemini-2.5-flash-lite",
-  quality: "gemini-2.5-flash",
+  fast: process.env.GEMINI_MODEL_FAST || "gemini-3.5-flash-lite",
+  quality: process.env.GEMINI_MODEL_QUALITY || "gemini-3.5-flash",
 };
 
 const HOOKS_COMPACT = `1|gia_soc|{gia} mà làm được điều này thì quá vô lý…
@@ -136,7 +139,9 @@ CHỈ TRẢ VỀ JSON, không kèm markdown, không giải thích gì thêm:
     console.error("Gemini SDK error:", e);
     const status = e?.status || e?.code || (e?.message?.match(/\b(4\d\d|5\d\d)\b/) || [])[1];
     let hint = "";
-    if (status == 401 || status == 403) {
+    if (status == 404 || /no longer available|NOT_FOUND/i.test(e?.message || "")) {
+      hint = ` — Google vừa đổi/khai tử model "${modelName}". Sửa nhanh KHÔNG CẦN CODE MỚI: vào Vercel → Environment Variables → thêm biến GEMINI_MODEL_FAST (hoặc GEMINI_MODEL_QUALITY) = tên model mới Google gợi ý trong thông báo lỗi → Redeploy.`;
+    } else if (status == 401 || status == 403) {
       hint = " — kiểm tra lại GEMINI_API_KEY đã dán đúng vào Environment Variables trên Vercel và đã Redeploy chưa.";
     } else if (status == 429) {
       hint = " — có thể đã chạm hạn mức free tạm thời, đợi 1-2 phút rồi thử lại, hoặc dùng chế độ ✍️ Thủ công.";
